@@ -60,7 +60,7 @@ def compute_alpha(z,b,J_rel, c):
     j = 0
     
     for i in J_rel:
-        if b[j] !=0:
+        if b[j] !=0 and -c-z[i] != 0 and c-z[i]!= 0:
             alpha_1 = (-c-z[i])/b[j]
             alpha_2 = (c-z[i])/b[j]
             alpha_i.append(min([alpha_1,alpha_2], key = abs))
@@ -76,6 +76,9 @@ def compute_alpha(z,b,J_rel, c):
         print("z ist", z)
         print("shape of b", b.shape)
         print(len(J_rel))
+    if alpha == 0:
+        print("Alpha is zero")
+        print(alpha_i)
     
     idx = alpha_i.index(alpha)
     return alpha, idx
@@ -94,6 +97,7 @@ def preprocessing_Neuron_p(A_0,z_0,c):
     k = 0
     c_vec = np.ones(z_0.shape) * c
     d1 = np.count_nonzero(np.abs(z_it) -c_vec)
+    sum = 0
     while(np.count_nonzero(np.abs(z_it) -c_vec) > m):
         k+=1
         J = np.where(np.abs(z_it) != c)[0]
@@ -109,48 +113,37 @@ def preprocessing_Neuron_p(A_0,z_0,c):
         alpha, idx = compute_alpha(z_it, B[:,0], J_rel, c)
         z_it = add_z_alpha_b(z_it,alpha,B[:,0], J_rel)
         z_it[np.abs(z_it) < 1e-17] = 0
-        #print("J_rel",len(J_rel))
-
+        counter = 0
         for i in range(len(J_rel)-m-1):
             B = reduce_basis(B,idx)
-            #print(B.shape)
             alpha,idx = compute_alpha(z_it,B[:,0], J_rel,c)
             if np.all(B[:,0] == 0 ):
                 print("Error!!")
+            z_it_prime = z_it
             z_it = add_z_alpha_b(z_it, alpha, B[:,0], J_rel)
+            counter+= 1
 
         d2 = np.count_nonzero(np.abs(z_it) -c_vec)
         print("k", k)
-        print("Changed to c", d1- d2)
+        print("Changed to c", d1- d2, " counter", counter)
+        sum = sum + d1-d2
         d1 = d2
-    return z_it, k
+    return z_it, k, sum
         
         
 
 def reduce_basis(B, idx):
-    # print(" Basis shape",B.shape)
-    # print("Index", idx)
-    # print(B[:,0].shape)
-    # print(B[:,1].shape)
-    # print(B[idx,1])
-    # print(B[idx,0])
     if B[idx,1] != 0:
         B_prime = np.reshape(B[:,0] - B[idx,0]/B[idx,1] * B[:,1], (B.shape[0],1))
     else:
         B_prime = np.reshape(B[:,1], (B.shape[0],1))
     for i in range(2,B.shape[1]):
         if B[idx,i] != 0:
-            # print(B[:,0].shape)
-            # print(B[:,i].shape)
             b_i = np.reshape((B[:,0] - B[idx,0]/B[idx,i] * B[:,i]),(B.shape[0],1))
 
         else:
-            #print("else case")
             b_i = np.reshape(B[:,i],(B.shape[0],1))
 
-        # #print(B_prime.shape)
-        # print(b_i)
-        # print(b_i.shape)
         B_prime = np.concatenate((B_prime,b_i), axis = 1)
     
     B_prime[np.abs(B_prime) < 1e-15] = 0
@@ -158,21 +151,18 @@ def reduce_basis(B, idx):
     return B_prime
 
 def add_z_alpha_b(z,alpha,b, J_rel):
-    #print("b is", b)
     j = 0
     for i in J_rel:
         z[i] = z[i] + alpha* b[j]
         j+=1
-    #print("z nach adden in funktion", z)
     return z
 
 
 
 
-A = np.random.rand(150,5000)
-z = np.random.rand(5000)
+A = np.random.rand(300,12000)
+z = np.random.rand(12000)
 c = np.abs(max(z, key = abs))
-#print("c",c, "z", z)
 start_time = time.time()
 z_it, k = preprocessing_neuron(A,z,c)
 print("Algorithm orig needs seconds", (time.time()-start_time))
@@ -184,15 +174,15 @@ print(np.matmul(A,z)-np.matmul(A,z_it))
 
 
 
-A = np.random.rand(150,5000)
-z = np.random.rand(5000)
-c = np.abs(max(z, key = abs))
-c_vec = np.ones(z.shape) * c
-start_time = time.time()
-z_it,k = preprocessing_Neuron_p(A,z,c)
-print("Algorithm changed needs seconds", (time.time()-start_time))
+# A = np.random.rand(300,12000)
+# z = np.random.rand(12000)
+# c = np.abs(max(z, key = abs))
+# c_vec = np.ones(z.shape) * c
+# start_time = time.time()
+# z_it,k, s = preprocessing_Neuron_p(A,z,c)
+# print("Algorithm changed needs seconds", (time.time()-start_time))
+# print("Zu c geänderte", s)
+# print("Iterationen", k)
 
-print("Iterationen", k)
-
-print("Non max entries: ",np.count_nonzero(np.abs(z_it) -c_vec))
-print(np.matmul(A,z)-np.matmul(A,z_it))
+# print("Non max entries: ",np.count_nonzero(np.abs(z_it) -c_vec))
+# print(np.matmul(A,z)-np.matmul(A,z_it))
