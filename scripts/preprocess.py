@@ -119,8 +119,8 @@ def preprocessing_Neuron_p(A_0,z_0,c):
             alpha,idx = compute_alpha(z_it,B[:,0], J_rel,c)
             if np.all(B[:,0] == 0 ):
                 print("Error!!")
-            z_it_prime = z_it
             z_it = add_z_alpha_b(z_it, alpha, B[:,0], J_rel)
+            #idea: Update J_rel in case multiple entries of z_it are now equal to c or -c
             counter+= 1
 
         d2 = np.count_nonzero(np.abs(z_it) -c_vec)
