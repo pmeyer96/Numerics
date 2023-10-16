@@ -77,14 +77,3 @@ print(dauer)
 layer_1_df = pd.DataFrame(results_layer_1)
 layer_2_df = pd.DataFrame(results_layer_2)
 layer_3_df = pd.DataFrame(results_layer_3)
-
-
-layer_1_df.to_csv(
-    "/home/patric/Masterthesis/Numerics/data/comparsion_mnist/layer_1_msq.csv"
-)
-layer_2_df.to_csv(
-    "/home/patric/Masterthesis/Numerics/data/comparsion_mnist/layer_2_msq.csv"
-)
-layer_3_df.to_csv(
-    "/home/patric/Masterthesis/Numerics/data/comparsion_mnist/layer_3_msq.csv"
-)
