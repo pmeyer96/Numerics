@@ -1,6 +1,4 @@
 *.pyc
-*.csv
 *.ipynb_checkpoints
 previous_version/
-*.png
 model_metrics/
